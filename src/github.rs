@@ -344,7 +344,12 @@ impl GitHub {
                 ),
                 Some(&updates),
             )
-            .await?;
+            .await
+            .map_err(|err| {
+                tracing::error!("Failed to update PR #{number}: {:?}", err);
+                err
+            })
+            .context(format!("updating PR #{number}"))?;
 
         Ok(())
     }
@@ -489,6 +494,13 @@ impl GitHubBranch {
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
+
+    #[test]
+    fn test_failure_to_validate_uri() {
+        use std::str::FromStr;
+        assert!(http::Uri::from_str("repos/pulls/13345").is_err());
+        assert!(http::Uri::from_str("/repos/pulls/13345").is_ok());
+    }
 
     #[test]
     fn test_new_from_ref_with_branch_name() {

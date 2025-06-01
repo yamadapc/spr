@@ -90,6 +90,8 @@ pub enum OptionsError {
 }
 
 pub async fn spr() -> Result<()> {
+    tracing_subscriber::fmt::init();
+
     let cli = Cli::parse();
 
     if let Some(path) = &cli.cd {
